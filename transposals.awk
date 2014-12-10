@@ -7,6 +7,9 @@
 
 function regex_for_letters(letter, count) {
     ret_string = ""
+
+    # one could just use the for loop below, but when debugging, it's easier to read
+    # if single characters are just by themselves rather than bracketed by .*
     if (count == 1) {
       ret_string = letter
     } else {
