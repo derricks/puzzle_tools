@@ -40,8 +40,8 @@ BEGIN {
   }
 }
 
-# for each line, invoke a sub-process of awk to check the && regex against the string 
-# (ands aren't part of regexes because of the need to backtrack on a string)
+# for each line that's at least as long as the search string, check the input against
+# the set of regexes. If they all match, print the line.
 length($0) >= string_length {
    # remove spaces
    cleaned_string = $0
