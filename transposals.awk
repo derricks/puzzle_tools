@@ -6,19 +6,23 @@
 
 
 function regex_for_letters(letter, count) {
-    ret_string = "/"
+    ret_string = ""
     if (count == 1) {
-      ret_string = ret_string letter
+      ret_string = letter
     } else {
 		for (i = 1; i <= count; i++) {
 	      ret_string = (ret_string ".*" letter ".*")
 		}
 	}
-	ret_string = ret_string "/"
 	return ret_string
 }
-# This script actually works by building up an && regex and passing that to another instance of awk
+
 BEGIN {
+  if (search == "") {
+    print "You must specify a search string."
+    exit
+  }
+
   # build up the regex to use 
   #   split the search string up
   #   count instances of each letter
@@ -29,13 +33,10 @@ BEGIN {
     letter_counts[search_chars[i]] = letter_counts[search_chars[i]] + 1
   }
 
-  final_regex = ""
+  regex_count = 0
   for (cur_letter in letter_counts) {
-    if (final_regex == "") {
-       final_regex = regex_for_letters(cur_letter, letter_counts[cur_letter])
-    } else {
-       final_regex = (final_regex " && " regex_for_letters(cur_letter, letter_counts[cur_letter]))
-    }
+    regex_count = regex_count + 1
+    regexes[regex_count] = regex_for_letters(cur_letter, letter_counts[cur_letter])
   }
 }
 
@@ -46,14 +47,13 @@ length($0) >= string_length {
    cleaned_string = $0
    gsub(" ", "", cleaned_string)
 
-   cmd = "echo " cleaned_string "| awk '" final_regex "'"
-   cmd | getline line
-   close(cmd)
+   # see if all the regexes matches
+   for (cur_regex in regexes) {
 
-   if (length(line) > 0) {
-      print $0
+      if (cleaned_string !~ regexes[cur_regex]) {
+        next
+      }
    }
+   print $0
 
-   # reset line because if there's no output from cmd |, line isn't updated
-   line = "" 
 }
